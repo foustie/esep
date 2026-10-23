@@ -4,16 +4,23 @@ import React, { useState } from 'react'
 // Используется и на портале донора, и во флоу НКО.
 export default function FeedbackModal({ onClose }) {
   const [sent, setSent] = useState(false)
+  const [error, setError] = useState('')
 
   const submit = async (e) => {
     e.preventDefault()
     const data = new FormData(e.target)
-    await fetch('/', {
-      method: 'POST',
-      headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams(data).toString(),
-    })
-    setSent(true)
+    // Приём отзывов жил на Netlify Forms; на Cloudflare его нет — не делаем вид, что отзыв ушёл.
+    try {
+      const res = await fetch('/', {
+        method: 'POST',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(data).toString(),
+      })
+      if (!res.ok) throw new Error()
+      setSent(true)
+    } catch {
+      setError('Приём отзывов отключён в этом демо — отзыв не отправлен.')
+    }
   }
 
   return (
@@ -51,6 +58,7 @@ export default function FeedbackModal({ onClose }) {
               Контакт для связи (необязательно)
               <input name="contact" placeholder="телеграм / email" />
             </label>
+            {error && <p className="hint" role="alert">{error}</p>}
             <div className="modal-actions">
               <button type="button" className="ghost-btn" onClick={onClose}>Отмена</button>
               <button type="submit" className="primary-btn">Отправить</button>

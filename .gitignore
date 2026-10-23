@@ -6,3 +6,4 @@ dist
 
 .claude/
 .deploy*.log
+.wrangler
